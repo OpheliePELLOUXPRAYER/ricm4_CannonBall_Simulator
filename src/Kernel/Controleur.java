@@ -1,0 +1,135 @@
+package Kernel;
+
+import java.awt.Point;
+import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
+import org.newdawn.slick.AppGameContainer;
+import org.newdawn.slick.SlickException;
+
+import Enum.Mode;
+import Enum.Topic;
+import Models.Car;
+import Models.QRcode;
+import Views.View;
+
+public class Controleur {
+	private ArrayList<Car> _cars;
+	private ArrayList<QRcode> _qrs;
+	private Timer t;	
+	private Mode _mode;
+	
+	private Callback callback;
+	
+	public Controleur(Mode mode, Topic topic, String broker, String clientId){
+		int qos = 0;
+		MemoryPersistence persistence = new MemoryPersistence();
+		callback = new Callback("Idle");
+
+		try {
+			MqttClient client = new MqttClient(broker, clientId, persistence);
+			MqttConnectOptions connOpts = new MqttConnectOptions();
+			connOpts.setCleanSession(true);
+
+			System.out.println("Connecting to broker: " + broker);
+			client.connect(connOpts);
+			System.out.println("Connected");
+			client.setCallback(callback);
+
+			client.subscribe(topic.toString(topic), qos);
+		
+			//----------------------------------------------------------------//
+			_cars = new ArrayList<Car>();
+			_cars.add(new Car("car.png", new Point(230, 450), 0));
+			_qrs = new ArrayList<QRcode>();
+			if(mode == Mode.RABBIT){
+				_qrs.add(new QRcode("rabbit.png", new Point(230,400)));
+			}
+			
+			t=new Timer();
+			
+			TimerTask task = new TimerTask() 
+			{
+				@Override
+				public void run() 
+				{
+					ordonnanceur();
+				}
+			};
+			t.schedule(task, 1000);
+			
+			AppGameContainer container;
+			try
+			{
+				container = new AppGameContainer(new View("Simulator",this));
+				container.setDisplayMode(500,500, false); 
+				container.setShowFPS(false);
+				container.start();
+			}
+			catch(SlickException e)
+			{
+				e.printStackTrace();
+			}
+			
+			//----------------------------------------------------------------//
+			client.disconnect();
+			System.out.println("Disconnected");
+	
+			System.exit(0);
+		} catch (MqttException me) {
+			System.out.println("reason " + me.getReasonCode());
+			System.out.println("msg " + me.getMessage());
+			System.out.println("loc " + me.getLocalizedMessage());
+			System.out.println("cause " + me.getCause());
+			System.out.println("excep " + me);
+			me.printStackTrace();
+		}
+	}
+	
+
+	public ArrayList<Car> get_cars() {
+		return _cars;
+	}
+
+	public void set_cars(ArrayList<Car> _cars) {
+		this._cars = _cars;
+	}
+
+	public ArrayList<QRcode> get_qrs() {
+		return _qrs;
+	}
+
+	public void set_qrs(ArrayList<QRcode> _qrs) {
+		this._qrs = _qrs;
+	}
+
+	public Mode get_mode() {
+		return _mode;
+	}
+
+	public void set_mode(Mode _mode) {
+		this._mode = _mode;
+	}
+	
+	/**
+	 * Ordonnanceur : Fonction controlant l'execution des actions du jeu
+	 */
+	public void ordonnanceur(){
+		TimerTask task = new TimerTask(){			
+			public void run(){
+				String vitesse;
+				if((vitesse = callback.get_message()) != "Idle"){
+					_cars.get(0).set_vitesse(vitesse);
+				}
+				_qrs.get(0).set_position(new Point(_qrs.get(0).get_position().x, _qrs.get(0).get_position().y - _cars.get(0).get_vitesse()));
+				_cars.get(0).avancer(_cars.get(0).get_vitesse());
+			}
+		};
+		t.scheduleAtFixedRate(task, 0, 500);
+	}		
+}

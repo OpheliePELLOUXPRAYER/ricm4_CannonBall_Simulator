@@ -7,9 +7,9 @@ public enum Topic{
 	public String toString(Topic t){
 		switch(t){
 			case TOPIC_STEER:
-				return "metrics/steering";
+				return "simulator/steering";
 			case TOPIC_THROT : 
-				return "metrics/throttle";
+				return "simulator/throttle";
 			default:
 				return "no topic";
 		}

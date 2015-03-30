@@ -141,4 +141,34 @@ public class Controleur {
 		};
 		t.scheduleAtFixedRate(task, 0, 1000);
 	}
+
+	public int getQrByPosition(int i, int j) {
+		Point p = new Point(i, j);
+		for(int k = 0; k<_qrs.size();k++){
+			if(_qrs.get(k).contains(p)){
+				return k;
+			}
+		}
+		return -1;
+	}
+	
+	public int getCarByPosition(int i, int j) {
+		Point p = new Point(i, j);
+		for(int k = 0; k<_cars.size();k++){
+			if(_cars.get(k).contains(p)){
+				return k;
+			}
+		}
+		return -1;
+	}
+
+	public void addQR(String image, int i, int j) {
+		get_qrs().add(new QRcode(image, new Point(i , j)));
+		//publish
+	}
+
+	public void removeQR(int k) {
+		get_qrs().remove(k);
+		//publish
+	}
 }

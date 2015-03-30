@@ -58,8 +58,9 @@ public class Controleur {
 			_cars = new ArrayList<Car>();
 			_cars.add(new Car("car.png", new Point(230, 450), 0));
 			_qrs = new ArrayList<QRcode>();
-			if (mode == Mode.RABBIT) {
-				_qrs.add(new QRcode("rabbit.png", new Point(230, 400)));
+			
+			if(mode == Mode.RABBIT){
+				//_qrs.add(new QRcode("rabbit.png", new Point(230,400)));
 			}
 
 			AppGameContainer container;
@@ -67,6 +68,7 @@ public class Controleur {
 				container = new AppGameContainer(new View("Simulator", this));
 				container.setDisplayMode(500, 500, false);
 				container.setShowFPS(false);
+				//container.setAlwaysRender(true);
 				container.start();
 			} catch (SlickException e) {
 				e.printStackTrace();
@@ -131,15 +133,10 @@ public class Controleur {
 				if (callback.isMessageArrived()) {
 					readData();
 				}
-				int pos = _qrs.get(0).get_position().x
-						- _cars.get(0).get_angle();
-				int vit = _qrs.get(0).get_position().y
-						- _cars.get(0).get_vitesse();
-				_qrs.get(0)
-						.set_position(
-								new Point(pos, vit));
-				_cars.get(0).avancer(_cars.get(0).get_angle(),
-						_cars.get(0).get_vitesse());
+				/*int pos = _qrs.get(0).get_position().x - _cars.get(0).get_angle();
+				int vit = _qrs.get(0).get_position().y - _cars.get(0).get_vitesse();
+				_qrs.get(0).set_position(new Point(pos, vit));*/
+				_cars.get(0).avancer(_cars.get(0).get_angle(),_cars.get(0).get_vitesse());
 			}
 		};
 		t.scheduleAtFixedRate(task, 0, 1000);

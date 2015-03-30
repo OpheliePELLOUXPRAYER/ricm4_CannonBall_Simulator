@@ -9,7 +9,6 @@ import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 public class MqttPublishSample {
 
     public static void main(String[] args) {
-
     	/*
     	String defaultSpeed	= "90";
     	String defaultAngle	= "90";

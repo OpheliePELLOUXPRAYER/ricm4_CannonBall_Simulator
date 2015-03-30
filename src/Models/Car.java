@@ -12,8 +12,11 @@ public class Car{
 	private int _id;
 	private String _image;
 	private Point _position;
-	private int _vitesse;
-	private int _angle;
+	private int _vitesse = 90;
+	private int _angle = 90;
+	
+	private static int regVitesse = 90;
+	private static int regAngle = 90;
 	
 	public Car(){
 		_image = "car.png";
@@ -73,7 +76,7 @@ public class Car{
 	}
 
 	public void set_vitesse(String vitesse) {
-		this._vitesse = new Integer(vitesse)-90;
+		this._vitesse = new Integer(vitesse)-regVitesse;
 	}
 	
 	public void set_vitesse(int vitesse) {
@@ -91,27 +94,27 @@ public class Car{
 
 	public void avancer(){
 		int de = 1; // a voir
-		avancer(de);
+		avancer(de, 0);
 	}
 	
-	public void avancer(int de){
-		set_position(new Point(_position.x, _position.y - de));
+	public void avancer(int angle, int de){
+		set_position(new Point(_position.x - angle, _position.y - de));
 	}
 	
 	public void reculer(){
 		int de = 1; 
-		avancer(-de); // a voir pour le négatif
+		avancer(-de, 0); // a voir pour le nï¿½gatif
 	}
 	
-	public void reculer(int de){
-		avancer(-de);
+	public void reculer(int de, int angle){
+		avancer(-de, angle);
 	}
 	
 	/**
 	 * voir pour une version fluide 
 	 */
-	public void tourner(){
-		
+	public void tourner(String angle){
+		this._angle = new Integer(angle)-regAngle;	
 	}
 	
 	public void accelere(int de){
@@ -127,5 +130,10 @@ public class Car{
 			_vitesse--;
 		}
 		set_vitesse(0);
+	}
+
+	public void set_direction(String string) {
+		this._angle = new Integer(string)-regAngle;
+		
 	}
 }

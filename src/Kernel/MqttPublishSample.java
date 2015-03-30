@@ -11,7 +11,7 @@ public class MqttPublishSample {
     public static void main(String[] args) {
 
         String topic        = "metrics/steering";
-        String content      = "91";
+        String content      = "100";
         int qos             = 2;
         String broker       = "tcp://localhost:1883";
         String clientId     = "pub";

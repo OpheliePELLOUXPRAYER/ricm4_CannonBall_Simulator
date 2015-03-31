@@ -211,6 +211,16 @@ public class Controleur {
 
 	public void moveQR(int _idQRmove, int i, int j) {
 		get_qrs().get(_idQRmove).set_position(new Point(i,j));
-		//publish
+		try {
+			String tmp = String.valueOf(_idQRmove) + ":" + String.valueOf(i) + "," + String.valueOf(j); 
+	        MqttMessage coord = new MqttMessage(tmp.getBytes());
+			client.publish(Topic.toString(Topic.TOPIC_MOV), coord);
+		} catch (MqttPersistenceException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (MqttException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }

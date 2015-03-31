@@ -26,7 +26,7 @@ public class Controleur {
 
 	private Callback callback;
 
-	public Controleur(Mode mode, Topic topic, Topic topic2, String broker, String clientId) {
+	public Controleur(Mode mode, Topic[] topic, String broker, String clientId) {
 		int qos = 0;
 		MemoryPersistence persistence = new MemoryPersistence();
 		callback = new Callback("Idle");
@@ -51,8 +51,11 @@ public class Controleur {
 			System.out.println("Connected");
 			client.setCallback(callback);
 
-			client.subscribe(topic.toString(topic), qos);
-			client.subscribe(topic.toString(topic2), qos);
+			int lenght = topic.length;
+			for (int i = 0; i < lenght; i++) {
+				Topic tmp = topic[i];
+				client.subscribe(tmp.toString(tmp), qos);
+			}
 
 			// ----------------------------------------------------------------//
 			_cars = new ArrayList<Car>();

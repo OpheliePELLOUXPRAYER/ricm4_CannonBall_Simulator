@@ -6,6 +6,8 @@ import Enum.Topic;
 public class Launcher {
 
 	public static void main(String[] args) {
-			new Controleur(Mode.RABBIT, Topic.TOPIC_STEER, Topic.TOPIC_THROT, "tcp://localhost:1883", "Simulator");
+		Topic[] topic = {Topic.TOPIC_STEER, Topic.TOPIC_THROT};
+		new Controleur(Mode.RABBIT, topic,
+				"tcp://localhost:1883", "Simulator");
 	}
 }

@@ -53,7 +53,7 @@ public class MqttPublishSample {
             message = new MqttMessage(speed.getBytes());
             System.out.println("Publishing angle: "+angle);
             message2 = new MqttMessage(angle.getBytes());
-            System.out.println("Publishing time: "+time);
+            message.setQos(qos);
             sampleClient.publish(topic, message);
             message2.setQos(qos);
             sampleClient.publish(topic2, message2);

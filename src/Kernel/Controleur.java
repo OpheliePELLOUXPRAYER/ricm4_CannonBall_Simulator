@@ -208,4 +208,9 @@ public class Controleur {
 		
 		get_qrs().remove(k);
 	}
+
+	public void moveQR(int _idQRmove, int i, int j) {
+		get_qrs().get(_idQRmove).set_position(new Point(i,j));
+		//publish
+	}
 }

@@ -24,6 +24,8 @@ public class View extends BasicGame{
 	private Controleur _ctrl;
 	private int _nbQRcode = 0;
 	private int _nbCars = 0;
+	private int _move = 0;
+	private int _idQRmove = -1;
 	
 	public View(String title) {
 		super(title);
@@ -85,6 +87,31 @@ public class View extends BasicGame{
 				_ctrl.removeQR(k);
 			}		
 		}
+		if(input.isMousePressed(Input.MOUSE_RIGHT_BUTTON)){
+			int i;
+			int j;
+			int k = 0;
+			switch(_move){
+			case 0:
+				i = (Mouse.getEventX()-21);
+				j = ((-1*Mouse.getEventY())-21);
+				if((k = _ctrl.getQrByPosition(i, j)) > -1){
+					_ctrl.get_qrs().get(k).set_position(new Point(-1,-1));
+					_idQRmove = k;
+					_move = 1;
+				}
+				break;
+			case 1 :
+				i = (Mouse.getEventX()-21);
+				j = ((-1*Mouse.getEventY())-21);
+				_ctrl.get_qrs().get(_idQRmove).set_position(new Point(-1,-1));
+				if((k = _ctrl.getQrByPosition(i, j)) == -1 && _ctrl.getCarByPosition(i, j) == -1){
+					_ctrl.moveQR(_idQRmove, i, j);
+					_move = 0;
+					_idQRmove = -1;
+				}
+			}
+		}
 	}
 	
 	@Override
@@ -100,8 +127,15 @@ public class View extends BasicGame{
 			//System.out.println("Rotation : " + _animation_cars[i][0].getCurrentFrame().getRotation());
 			g.drawAnimation(_animation_cars[i][0], _ctrl.get_cars().get(i).get_position().x,_ctrl.get_cars().get(i).get_position().y);
 		}	
+		
+		if(_nbQRcode > 0 && _move == 1){
+			int x = (Mouse.getEventX()-21);
+			int y = ((-1*Mouse.getEventY())-21);
+			_ctrl.get_qrs().get(_idQRmove).set_position(new Point(x,y));
+		}
+		
 		for(int i=0;i<_nbQRcode;i++){
-			g.drawAnimation(_animation_qrs[0][0], _ctrl.get_qrs().get(i).get_position().x, _ctrl.get_qrs().get(i).get_position().y);	
+			g.drawAnimation(_animation_qrs[0][0], _ctrl.get_qrs().get(i).get_position().x, _ctrl.get_qrs().get(i).get_position().y);		
 		}
 	}
 }

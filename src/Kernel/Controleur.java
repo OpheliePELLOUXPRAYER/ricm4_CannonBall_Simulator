@@ -1,6 +1,7 @@
 package Kernel;
 
 import java.awt.Point;
+import java.awt.image.SampleModel;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -8,6 +9,8 @@ import java.util.TimerTask;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.newdawn.slick.AppGameContainer;
 import org.newdawn.slick.SlickException;
@@ -24,6 +27,8 @@ public class Controleur {
 	private Timer t;
 	private Mode _mode;
 
+	private MqttClient client;
+	
 	private Callback callback;
 
 	public Controleur(Mode mode, Topic[] topic, String broker, String clientId) {
@@ -42,7 +47,7 @@ public class Controleur {
 		t.schedule(task, 1000);
 
 		try {
-			MqttClient client = new MqttClient(broker, clientId, persistence);
+			client = new MqttClient(broker, clientId, persistence);
 			MqttConnectOptions connOpts = new MqttConnectOptions();
 			connOpts.setCleanSession(true);
 
@@ -61,9 +66,9 @@ public class Controleur {
 			_cars = new ArrayList<Car>();
 			_cars.add(new Car("car.png", new Point(230, 450), 0));
 			_qrs = new ArrayList<QRcode>();
-			
-			if(mode == Mode.RABBIT){
-				//_qrs.add(new QRcode("rabbit.png", new Point(230,400)));
+
+			if (mode == Mode.RABBIT) {
+				// _qrs.add(new QRcode("rabbit.png", new Point(230,400)));
 			}
 
 			AppGameContainer container;
@@ -71,7 +76,7 @@ public class Controleur {
 				container = new AppGameContainer(new View("Simulator", this));
 				container.setDisplayMode(500, 500, false);
 				container.setShowFPS(false);
-				//container.setAlwaysRender(true);
+				// container.setAlwaysRender(true);
 				container.start();
 			} catch (SlickException e) {
 				e.printStackTrace();
@@ -124,7 +129,8 @@ public class Controleur {
 		if ((message = callback.get_message()) != "Idle") {
 			_cars.get(0).set_vitesse(message);
 		}
-		while (!callback.isMessageArrived());
+		while (!callback.isMessageArrived())
+			;
 		if ((message = callback.get_message()) != "Idle") {
 			_cars.get(0).set_direction(message);
 		}
@@ -136,10 +142,14 @@ public class Controleur {
 				if (callback.isMessageArrived()) {
 					readData();
 				}
-				/*int pos = _qrs.get(0).get_position().x - _cars.get(0).get_angle();
-				int vit = _qrs.get(0).get_position().y - _cars.get(0).get_vitesse();
-				_qrs.get(0).set_position(new Point(pos, vit));*/
-				_cars.get(0).avancer(_cars.get(0).get_angle(),_cars.get(0).get_vitesse());
+				/*
+				 * int pos = _qrs.get(0).get_position().x -
+				 * _cars.get(0).get_angle(); int vit =
+				 * _qrs.get(0).get_position().y - _cars.get(0).get_vitesse();
+				 * _qrs.get(0).set_position(new Point(pos, vit));
+				 */
+				_cars.get(0).avancer(_cars.get(0).get_angle(),
+						_cars.get(0).get_vitesse());
 			}
 		};
 		t.scheduleAtFixedRate(task, 0, 1000);
@@ -147,31 +157,55 @@ public class Controleur {
 
 	public int getQrByPosition(int i, int j) {
 		Point p = new Point(i, j);
-		for(int k = 0; k<_qrs.size();k++){
-			if(_qrs.get(k).contains(p)){
-				return k;
-			}
-		}
-		return -1;
-	}
-	
-	public int getCarByPosition(int i, int j) {
-		Point p = new Point(i, j);
-		for(int k = 0; k<_cars.size();k++){
-			if(_cars.get(k).contains(p)){
+		for (int k = 0; k < _qrs.size(); k++) {
+			if (_qrs.get(k).contains(p)) {
 				return k;
 			}
 		}
 		return -1;
 	}
 
-	public void addQR(String image, int i, int j) {
-		get_qrs().add(new QRcode(image, new Point(i , j)));
-		//publish
+	public int getCarByPosition(int i, int j) {
+		Point p = new Point(i, j);
+		for (int k = 0; k < _cars.size(); k++) {
+			if (_cars.get(k).contains(p)) {
+				return k;
+			}
+		}
+		return -1;
+	}
+
+	public void addQR(String image,  int i, int j) {
+		int k = this.get_qrs().size();
+		try {
+			/* envoie k, i et j : "k:i,j" */
+			String tmp = String.valueOf(k) + ":" + String.valueOf(i) + "," + String.valueOf(j); 
+	        MqttMessage coord = new MqttMessage(tmp.getBytes());
+			client.publish(Topic.toString(Topic.TOPIC_ADD), coord);
+		} catch (MqttPersistenceException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (MqttException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		get_qrs().add(new QRcode(image, new Point(i, j)));
 	}
 
 	public void removeQR(int k) {
+		Point point = get_qrs().get(k).get_position();
+		try {
+			String tmp = String.valueOf(k) + ":" + String.valueOf(point.x) + "," + String.valueOf(point.y); 
+	        MqttMessage coord = new MqttMessage(tmp.getBytes());
+			client.publish(Topic.toString(Topic.TOPIC_DEL), coord);
+		} catch (MqttPersistenceException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (MqttException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		get_qrs().remove(k);
-		//publish
 	}
 }

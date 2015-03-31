@@ -9,6 +9,7 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 public class Callback implements MqttCallback {
 
 	String _message;
+	String _topic;
 	static boolean _messageArrived = false;
 	boolean nfirst = false;
 	static Semaphore sem = new Semaphore(0);
@@ -43,10 +44,19 @@ public class Callback implements MqttCallback {
 		System.out.println("| Message: " + new String(message.getPayload()));
 		System.out.println("-------------------------------------------------");
 		set_message(message);
+		set_topic(topic);
 		_messageArrived = true;
 		System.out.println(message);
 	}
 
+	public void set_topic(String topic) {
+		_topic = topic;
+	}
+
+	public String get_topic() {
+		return _topic;
+	}
+	
 	public void set_message(MqttMessage message) {
 		_message = new String(message.getPayload());
 	}

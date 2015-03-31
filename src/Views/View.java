@@ -41,10 +41,10 @@ public class View extends BasicGame{
 		SpriteSheet sprite_rabbit = new SpriteSheet("rabbit.png", 42, 42);
 		int tAnim = 350;	// temps d'affichage de chaque frame en ms
 		_nbCars = _ctrl.get_cars().size();
-		_animation_cars = new Animation[_nbCars][1];
+		_animation_cars = new Animation[_nbCars][4];
 		_animation_qrs = new Animation[1][2];
 		for(int i = 0; i<_nbCars; i++){
-			for(int j = 0; j<_animation_cars.length; j++)
+			for(int j = 0; j<_animation_cars[i].length; j++)
 			{
 				_animation_cars[i][j] = new Animation();
 				_animation_cars[i][j].addFrame(sprite.getSprite(0, j), tAnim);
@@ -70,7 +70,20 @@ public class View extends BasicGame{
 		Input input = gc.getInput();
 		if(input.isMousePressed(Input.MOUSE_LEFT_BUTTON))
 		{
-			_ctrl.get_qrs().add(new QRcode("rabbit.png", new Point((Mouse.getEventX()-21) , ((-1*Mouse.getEventY())-24))));
+			int i = (Mouse.getEventX()-21);
+			int j = ((-1*Mouse.getEventY())-21);
+			if(_ctrl.getQrByPosition(i, j) == -1 && _ctrl.getCarByPosition(i, j) == -1){
+				_ctrl.addQR("rabbit.png", i, j);	// rempalcer le string par l'id du QR
+			}
+		}
+		if(input.isMousePressed(Input.MOUSE_MIDDLE_BUTTON))
+		{
+			int i = (Mouse.getEventX()-21);
+			int j = ((-1*Mouse.getEventY())-21);
+			int k = 0;
+			if((k = _ctrl.getQrByPosition(i, j)) > -1){
+				_ctrl.removeQR(k);
+			}		
 		}
 	}
 	
@@ -82,6 +95,9 @@ public class View extends BasicGame{
 		
 		_nbQRcode = _ctrl.get_qrs().size();
 		for(int i=0;i<_nbCars;i++){
+			//System.out.println("Angle : " + _ctrl.get_cars().get(i).get_angle());
+			_animation_cars[i][0].getCurrentFrame().setRotation((-2*_ctrl.get_cars().get(i).get_angle()));
+			//System.out.println("Rotation : " + _animation_cars[i][0].getCurrentFrame().getRotation());
 			g.drawAnimation(_animation_cars[i][0], _ctrl.get_cars().get(i).get_position().x,_ctrl.get_cars().get(i).get_position().y);
 		}	
 		for(int i=0;i<_nbQRcode;i++){

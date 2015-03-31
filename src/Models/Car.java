@@ -103,7 +103,7 @@ public class Car{
 	
 	public void reculer(){
 		int de = 1; 
-		avancer(-de, 0); // a voir pour le n�gatif
+		avancer(-de, 0); 
 	}
 	
 	public void reculer(int de, int angle){
@@ -111,7 +111,7 @@ public class Car{
 	}
 	
 	/**
-	 * voir pour une version fluide 
+	 * 
 	 */
 	public void tourner(String angle){
 		this._angle = new Integer(angle)-regAngle;	
@@ -135,5 +135,12 @@ public class Car{
 	public void set_direction(String string) {
 		this._angle = new Integer(string)-regAngle;
 		
+	}
+
+	public boolean contains(Point p) {
+		if(p.distance(get_position()) <= 60/2){
+			return true;
+		}
+		return false;
 	}
 }

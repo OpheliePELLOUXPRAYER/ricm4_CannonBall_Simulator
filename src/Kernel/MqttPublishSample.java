@@ -17,8 +17,8 @@ public class MqttPublishSample {
 
         String topic        = "simulator/throttle"; // propulsion
         String topic2       = "simulator/steering"; // direction
-        String speed      	= "94";
-        String angle 		= "91";
+        String speed      	= "98";
+        String angle 		= "94";
         int time			= 5000;
         int qos             = 2;
         String broker       = "tcp://localhost:1883";
@@ -45,8 +45,8 @@ public class MqttPublishSample {
             
             Thread.sleep(time);
             
-            speed = "91";
-            angle = "85";
+            speed = "98";
+            angle = "86";
             
             
             System.out.println("Publishing speed: "+speed);

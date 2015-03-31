@@ -50,6 +50,13 @@ public class QRcode{
 	public void set_position(Point position) {
 		this._position = position;
 	}
+
+	public boolean contains(Point p) {
+		if(p.distance(get_position()) <= 60/2){
+			return true;
+		}
+		return false;
+	}
 	
 	
 }

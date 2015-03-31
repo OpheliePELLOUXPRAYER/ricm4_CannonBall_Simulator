@@ -194,8 +194,9 @@ public class Controleur {
 
 	public void removeQR(int k) {
 		Point point = get_qrs().get(k).get_position();
+		int value = get_qrs().get(k).get_value();
 		try {
-			String tmp = String.valueOf(k) + ":" + String.valueOf(point.x) + "," + String.valueOf(point.y); 
+			String tmp = String.valueOf(k) + ":" + String.valueOf(value) + ":" + String.valueOf(point.x) + "," + String.valueOf(point.y); 
 	        MqttMessage coord = new MqttMessage(tmp.getBytes());
 			client.publish(Topic.toString(Topic.TOPIC_DEL), coord);
 		} catch (MqttPersistenceException e) {
@@ -209,10 +210,11 @@ public class Controleur {
 		get_qrs().remove(k);
 	}
 
-	public void moveQR(int _idQRmove, int i, int j) {
-		get_qrs().get(_idQRmove).set_position(new Point(i,j));
+	public void moveQR(int k, int i, int j) {
+		get_qrs().get(k).set_position(new Point(i,j));
+		int value = get_qrs().get(k).get_value();
 		try {
-			String tmp = String.valueOf(_idQRmove) + ":" + String.valueOf(i) + "," + String.valueOf(j); 
+			String tmp = String.valueOf(k) + ":" + String.valueOf(value) + ":" + String.valueOf(i) + "," + String.valueOf(j); 
 	        MqttMessage coord = new MqttMessage(tmp.getBytes());
 			client.publish(Topic.toString(Topic.TOPIC_MOV), coord);
 		} catch (MqttPersistenceException e) {

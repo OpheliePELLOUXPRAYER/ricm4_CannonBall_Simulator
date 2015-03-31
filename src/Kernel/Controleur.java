@@ -178,8 +178,8 @@ public class Controleur {
 	public void addQR(int value,  int i, int j) {
 		int k = this.get_qrs().size();
 		try {
-			/* envoie k, i et j : "k:i,j" */
-			String tmp = String.valueOf(k) + ":" + String.valueOf(i) + "," + String.valueOf(j); 
+			/* envoie k, i et j : "k:value:i,j" */
+			String tmp = String.valueOf(k) + ":" + String.valueOf(value) + ":" + String.valueOf(i) + "," + String.valueOf(j); 
 	        MqttMessage coord = new MqttMessage(tmp.getBytes());
 			client.publish(Topic.toString(Topic.TOPIC_ADD), coord);
 		} catch (MqttPersistenceException e) {

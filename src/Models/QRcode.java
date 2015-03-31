@@ -3,44 +3,26 @@ package Models;
 import java.awt.Point;
 
 /**
- * A traduire en anglais
+ * 
  * @author PELLOUX-PRAYER
  *
  */
 public class QRcode{
 	
-	private String _image;
-	private int _id;
-	private int _distance;
+	private int _value;
 	private Point _position;
 	
-	public QRcode(String image, Point p) {
-		_image = image;
+	public QRcode(int value, Point p) {
+		_value = value;
 		_position = p;
 	}
 
-	public String get_image() {
-		return _image;
+	public int get_value() {
+		return _value;
 	}
 
-	public void set_image(String image) {
-		this._image = image;
-	}
-
-	public int get_id() {
-		return _id;
-	}
-
-	public void set_id(int _id) {
-		this._id = _id;
-	}
-
-	public int get_distance() {
-		return _distance;
-	}
-
-	public void set_distance(int _distance) {
-		this._distance = _distance;
+	public void set_value(int value) {
+		this._value = value;
 	}
 
 	public Point get_position() {
@@ -57,6 +39,4 @@ public class QRcode{
 		}
 		return false;
 	}
-	
-	
 }

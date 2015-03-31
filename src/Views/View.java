@@ -20,12 +20,13 @@ import Models.QRcode;
 public class View extends BasicGame{
 
 	private Animation[][] _animation_cars;
-	private Animation[][] _animation_qrs;
+	private Animation[] _animation_qrs;
 	private Controleur _ctrl;
 	private int _nbQRcode = 0;
 	private int _nbCars = 0;
 	private int _move = 0;
 	private int _idQRmove = -1;
+	private int _currentValueOfQR = 0;
 	
 	public View(String title) {
 		super(title);
@@ -40,11 +41,11 @@ public class View extends BasicGame{
 	@Override
 	public void init(GameContainer gc) throws SlickException {
 		SpriteSheet sprite = new SpriteSheet(_ctrl.get_cars().get(0).get_image(), 42, 42);
-		SpriteSheet sprite_rabbit = new SpriteSheet("rabbit.png", 42, 42);
+		//SpriteSheet sprite_rabbit = new SpriteSheet("./images/rabbit.png", 42, 42);
 		int tAnim = 350;	// temps d'affichage de chaque frame en ms
 		_nbCars = _ctrl.get_cars().size();
 		_animation_cars = new Animation[_nbCars][4];
-		_animation_qrs = new Animation[1][2];
+		_animation_qrs = new Animation[4];
 		for(int i = 0; i<_nbCars; i++){
 			for(int j = 0; j<_animation_cars[i].length; j++)
 			{
@@ -52,15 +53,19 @@ public class View extends BasicGame{
 				_animation_cars[i][j].addFrame(sprite.getSprite(0, j), tAnim);
 				_animation_cars[i][j].addFrame(sprite.getSprite(1, j), tAnim);
 			}
-		}		
+		}	
 		
-		for(int k = 0; k < _animation_qrs[0].length; k++){
+		for(int k = 0; k < 4; k++){
+			_animation_qrs[k] = new Animation();
+			_animation_qrs[k].addFrame(new SpriteSheet("./images/"+k+".png", 42, 42), tAnim);
+		}
+		/*for(int k = 0; k < _animation_qrs[0].length; k++){
 			_animation_qrs[0][k] = new Animation();
 			_animation_qrs[0][k].addFrame(sprite_rabbit.getSprite(0, k), tAnim);
 			_animation_qrs[0][k].addFrame(sprite_rabbit.getSprite(1, k), tAnim);
 			_animation_qrs[0][k].addFrame(sprite_rabbit.getSprite(2, k), tAnim);
 		}
-		
+		*/
 		if(Mouse.isClipMouseCoordinatesToWindow()){
 			Mouse.setClipMouseCoordinatesToWindow(false);
 			//System.setProperty("org.lwjgl.input.Mouse.allowNegativeMouseCoords", "true");
@@ -75,7 +80,7 @@ public class View extends BasicGame{
 			int i = (Mouse.getEventX()-21);
 			int j = ((-1*Mouse.getEventY())-21);
 			if(_ctrl.getQrByPosition(i, j) == -1 && _ctrl.getCarByPosition(i, j) == -1){
-				_ctrl.addQR("rabbit.png", i, j);	// rempalcer le string par l'id du QR
+				_ctrl.addQR(_currentValueOfQR, i, j);
 			}
 		}
 		if(input.isMousePressed(Input.MOUSE_MIDDLE_BUTTON))
@@ -135,7 +140,25 @@ public class View extends BasicGame{
 		}
 		
 		for(int i=0;i<_nbQRcode;i++){
-			g.drawAnimation(_animation_qrs[0][0], _ctrl.get_qrs().get(i).get_position().x, _ctrl.get_qrs().get(i).get_position().y);		
+			g.drawAnimation(_animation_qrs[_ctrl.get_qrs().get(i).get_value()], _ctrl.get_qrs().get(i).get_position().x, _ctrl.get_qrs().get(i).get_position().y);		
 		}
 	}
+	
+	public void keyPressed(int key, char c){
+		switch(key){
+		case Input.KEY_A:
+			_currentValueOfQR = 0;
+			break;
+		case Input.KEY_Z:
+			_currentValueOfQR = 1;
+			break;
+		case Input.KEY_E:
+			_currentValueOfQR = 2;
+			break;
+		case Input.KEY_R:
+			_currentValueOfQR = 3;
+			break;
+		}
+	}
+	
 }

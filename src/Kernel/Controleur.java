@@ -64,7 +64,7 @@ public class Controleur {
 
 			// ----------------------------------------------------------------//
 			_cars = new ArrayList<Car>();
-			_cars.add(new Car("car.png", new Point(230, 450), 0));
+			_cars.add(new Car("./images/car.png", new Point(230, 450), 0));
 			_qrs = new ArrayList<QRcode>();
 
 			if (mode == Mode.RABBIT) {
@@ -175,7 +175,7 @@ public class Controleur {
 		return -1;
 	}
 
-	public void addQR(String image,  int i, int j) {
+	public void addQR(int value,  int i, int j) {
 		int k = this.get_qrs().size();
 		try {
 			/* envoie k, i et j : "k:i,j" */
@@ -189,7 +189,7 @@ public class Controleur {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		get_qrs().add(new QRcode(image, new Point(i, j)));
+		get_qrs().add(new QRcode(value, new Point(i, j)));
 	}
 
 	public void removeQR(int k) {

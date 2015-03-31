@@ -1,13 +1,33 @@
 package Kernel;
 
-import Enum.Mode;
 import Enum.Topic;
 
+/**
+ * Lancer du simulateur
+ * Projet Cannon Ball
+ * @author PELLOUX-PRAYER
+ * @version 2
+ * @date 31/03/15
+ */
 public class Launcher {
 
+	// Il risque d'avoir des problemes avec la librerie lwjGL
+	// le programme a était programmée en utilisant la version 2.9.2
+	// il ce trouve que cette version n'ai peut être pas totalement compatible avec les nouvelles versions de windows
+	// dans tout les cas il faut, pour réglé le programme de native :
+	// ajouter dans les natives du jar le lien vers les natives désiré (windows sur windows, linux sur linux ..)
+	// pour ce faire aller dans Propriété du projet 
+	// java build path 
+	// dérouler l'onglet concernant lwjGL et modifié la native location
 	public static void main(String[] args) {
-		Topic[] topic = {Topic.TOPIC_STEER, Topic.TOPIC_THROT};
-		new Controleur(Mode.RABBIT, topic,
-				"tcp://localhost:1883", "Simulator");
+		//Topic auquel le Controleur subscribe
+		Topic[] topic = {
+					Topic.TOPIC_STEER, 
+					Topic.TOPIC_THROT
+				};
+		// Creation du controleur du simulateur
+		new Controleur(topic, "tcp://localhost:1883", "Simulator");
+		//new Controleur(topic, "tcp://192.168.43.22:1883", "Simulator");
+		//new Controleur(topic, "tcp://5.196.18.82:80", "Simulator");
 	}
 }

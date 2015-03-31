@@ -6,14 +6,47 @@ import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
+
+/**
+ * Callback
+ * Projet Cannon Ball
+ * Cette classe permet d'informer le client de la réception d'un message 
+ * @author PELLOUX-PRAYER
+ * @version 2
+ * @date 31/03/15
+ */
 public class Callback implements MqttCallback {
 
+	/**
+	 * Dernier message reçu
+	 */
 	String _message;
+	
+	/**
+	 * Dernier Topic reçu
+	 */
 	String _topic;
+	
+	/**
+	 * Boolean informant sur l'arrivé d'un message 
+	 */
 	static boolean _messageArrived = false;
+	
+	/**
+	 * boolean laissant passer le premier message 
+	 * puis restant à vrai pour les suivant 
+	 * permant de mettre en place un ordre fifo
+	 */
 	boolean nfirst = false;
+	/**
+	 * semaphore permettant de gerer l'interbloquage 
+	 */
 	static Semaphore sem = new Semaphore(0);
 
+	/**
+	 * Constructeur du callback
+	 * @param message : la valeur par defaut du message courant
+	 */
 	public Callback(String message) {
 		super();
 		_message = message;
@@ -28,10 +61,17 @@ public class Callback implements MqttCallback {
 
 	}
 
+	/**
+	 * Informe sur l'arrivé d'un message nouveau message
+	 * @return
+	 */
 	public boolean isMessageArrived() {
 		return _messageArrived;
 	}
-
+	
+	/**
+	 * Traite l'arrivé d'un message 
+	 */
 	public synchronized void messageArrived(String topic, MqttMessage message)
 			throws Exception {
 		if (nfirst) {
@@ -43,9 +83,9 @@ public class Callback implements MqttCallback {
 		System.out.println("| Topic:" + topic);
 		System.out.println("| Message: " + new String(message.getPayload()));
 		System.out.println("-------------------------------------------------");
-		set_message(message);
-		set_topic(topic);
-		_messageArrived = true;
+		set_message(message); // modifie le message courant
+		set_topic(topic); // modifie le topic courant
+		_messageArrived = true; // indique qu'il y a nouveau message
 		System.out.println(message);
 	}
 
@@ -62,8 +102,8 @@ public class Callback implements MqttCallback {
 	}
 
 	public String get_message() {
-		sem.release();
-		_messageArrived = false;
+		sem.release(); // librère le prochain message
+		_messageArrived = false; // indique que le callback est prêt à recevoir un nouveau message 
 		return _message;
 	}
 

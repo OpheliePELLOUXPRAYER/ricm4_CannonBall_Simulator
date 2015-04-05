@@ -114,12 +114,14 @@ public class View extends BasicGame{
 		}
 		if(input.isMousePressed(Input.MOUSE_MIDDLE_BUTTON))
 		{
-			int x = (Mouse.getEventX()-21);
-			int y = ((-1*Mouse.getEventY())-21);
-			int k = 0;
-			if((k = _ctrl.getQrByPosition(x, y)) > -1){ // on regarde si y a bien un QRcode à supprimer
-				_ctrl.removeQR(k);
-			}		
+			if(_move == 0){
+				int x = (Mouse.getEventX()-21);
+				int y = ((-1*Mouse.getEventY())-21);
+				int k = 0;
+				if((k = _ctrl.getQrByPosition(x, y)) > -1){ // on regarde si y a bien un QRcode à supprimer
+					_ctrl.removeQR(k);
+				}	
+			}
 		}
 		if(input.isMousePressed(Input.MOUSE_RIGHT_BUTTON)){
 			int x;

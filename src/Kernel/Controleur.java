@@ -15,29 +15,69 @@ import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.newdawn.slick.AppGameContainer;
 import org.newdawn.slick.SlickException;
 
-import Enum.Mode;
 import Enum.Topic;
 import Models.Car;
 import Models.QRcode;
 import Views.View;
 
+/**
+ * Controleur du simulateur 
+ * Projet Cannon Ball
+ * @author PELLOUX-PRAYER
+ * @version 2
+ * @date 31/03/15
+ */
 public class Controleur {
+	/**
+	 * Liste des voitures 
+	 * pour le moment il n'y a qu'une seul voiture de gere 
+	 * mis dans le cas d'un convois il faudra pouvoir gérer plus d'une voiture
+	 */
 	private ArrayList<Car> _cars;
-	private ArrayList<QRcode> _qrs;
-	private Timer t;
-	private Mode _mode;
-
-	private MqttClient client;
 	
+	/**
+	 * Liste des QRcodes 
+	 * Le simulateur gere un certain nombre de QRcode 
+	 */
+	private ArrayList<QRcode> _qrs;
+	/**
+	 * le timer de l'ordonnanceur 
+	 * au cas d'un déplacement de plusieurs voitures c'est lui qui gérera leurs déplacement 
+	 * via un tourniquet par exemple
+	 */
+	private Timer t;
+
+	/**
+	 * Client de mqtt
+	 */
+	private MqttClient client;
+	/**
+	 * Quality of service 
+	 * http://www.eclipse.org/paho/files/mqttdoc/Cclient/qos.html 
+	 */
+	int qos = 0; 
+	
+	/**
+	 * Callback
+	 * voir fichier callback.java pour plus d'information
+	 */
 	private Callback callback;
 
-	public Controleur(Mode mode, Topic[] topic, String broker, String clientId) {
-		int qos = 0;
-		MemoryPersistence persistence = new MemoryPersistence();
-		callback = new Callback("Idle");
+	/**
+	 * Constructeur du Controleur 
+	 * @param topic : les topic auquel le clien mosquitto subscrit 
+	 * @param broker : l'adresse sur lequel le broker est lancé 
+	 * @param clientId : l'identifiant du client
+	 */
+	public Controleur(Topic[] topic, String broker, String clientId) {
+		MemoryPersistence persistence = new MemoryPersistence(); // initialisation de la persistence
+		callback = new Callback("Idle"); // creation du callback en initialisant le message courant à "Idle"
 
+		// creation du timer
 		t = new Timer();
 
+		// lancement de l'ordonnanceur. 
+		// il tourne toute les secondes sur lui même
 		TimerTask task = new TimerTask() {
 			@Override
 			public void run() {
@@ -45,38 +85,38 @@ public class Controleur {
 			}
 		};
 		t.schedule(task, 1000);
-
+		
 		try {
-			client = new MqttClient(broker, clientId, persistence);
-			MqttConnectOptions connOpts = new MqttConnectOptions();
+			client = new MqttClient(broker, clientId, persistence); // initialisation du client sur l'adresse du broker avec l'id clientId et avec la persistence créer plus haut 
+			MqttConnectOptions connOpts = new MqttConnectOptions(); // initilatilsation des options de connection
 			connOpts.setCleanSession(true);
 
 			System.out.println("Connecting to broker: " + broker);
 			client.connect(connOpts);
 			System.out.println("Connected");
-			client.setCallback(callback);
+			client.setCallback(callback); // met le callback personel pour le retour d'information du client 
 
 			int lenght = topic.length;
 			for (int i = 0; i < lenght; i++) {
 				Topic tmp = topic[i];
-				client.subscribe(tmp.toString(tmp), qos);
+				client.subscribe(tmp.toString(tmp), qos);// subscribe a chaque topic donne en parametre du constructeur 
 			}
 
+			// Partie concernant la mise en place des données du simulateur (les listes et la vue)
 			// ----------------------------------------------------------------//
 			_cars = new ArrayList<Car>();
-			_cars.add(new Car("./images/car.png", new Point(230, 450), 0));
+			// ajoute une voiture à la liste de voiture en lui donnant une position centré en bas de la fenetre
+			// et avec une image par defaut
+			_cars.add(new Car("./images/car.png", new Point(230, 450)));
+			// la liste est vite au lancement du programme
 			_qrs = new ArrayList<QRcode>();
 
-			if (mode == Mode.RABBIT) {
-				// _qrs.add(new QRcode("rabbit.png", new Point(230,400)));
-			}
-
+			// Partie concernant la vue
 			AppGameContainer container;
 			try {
 				container = new AppGameContainer(new View("Simulator", this));
 				container.setDisplayMode(500, 500, false);
 				container.setShowFPS(false);
-				// container.setAlwaysRender(true);
 				container.start();
 			} catch (SlickException e) {
 				e.printStackTrace();
@@ -112,49 +152,45 @@ public class Controleur {
 	public void set_qrs(ArrayList<QRcode> _qrs) {
 		this._qrs = _qrs;
 	}
-
-	public Mode get_mode() {
-		return _mode;
-	}
-
-	public void set_mode(Mode _mode) {
-		this._mode = _mode;
-	}
-
+	
 	/**
-	 * Ordonnanceur : Fonction controlant l'execution des actions du jeu
+	 * ReadData
+	 * si un message a été reçu et signalé par le CallBack 
+	 * on recupere le message et s'il est diffrérent de "Idle" on modifie les donnée en conséquence
 	 */
 	public void readData() {
 		String message;
 		if ((message = callback.get_message()) != "Idle") {
-			_cars.get(0).set_vitesse(message);
+			_cars.get(0).set_vitesse(message); // on modifie la vitesse 
 		}
-		while (!callback.isMessageArrived())
-			;
+		while (!callback.isMessageArrived()); // on attend de resevoir l'information du l'angle
 		if ((message = callback.get_message()) != "Idle") {
-			_cars.get(0).set_direction(message);
+			_cars.get(0).set_direction(message); // on modifie l'angle
 		}
 	}
-
+	
+	/**
+	 * Ordonnanceur
+	 */
 	public void ordonnanceur() {
 		TimerTask task = new TimerTask() {
 			public void run() {
 				if (callback.isMessageArrived()) {
 					readData();
 				}
-				/*
-				 * int pos = _qrs.get(0).get_position().x -
-				 * _cars.get(0).get_angle(); int vit =
-				 * _qrs.get(0).get_position().y - _cars.get(0).get_vitesse();
-				 * _qrs.get(0).set_position(new Point(pos, vit));
-				 */
-				_cars.get(0).avancer(_cars.get(0).get_angle(),
-						_cars.get(0).get_vitesse());
+				_cars.get(0).avancer(_cars.get(0).get_angle(),_cars.get(0).get_vitesse());
 			}
 		};
 		t.scheduleAtFixedRate(task, 0, 1000);
 	}
 
+	/**
+	 * getQrByPosition
+	 * @param i : coordonnée x de la position
+	 * @param j : coordonnée y de la position
+	 * @return -1 si la fonction n'a pas trouvé de QRcode à la position donnée 
+	 * k indice de la liste : si la fonction à trouvé un QRcode proche de cette position (proche à 30 pixels)
+	 */
 	public int getQrByPosition(int i, int j) {
 		Point p = new Point(i, j);
 		for (int k = 0; k < _qrs.size(); k++) {
@@ -165,6 +201,13 @@ public class Controleur {
 		return -1;
 	}
 
+	/**
+	 * getQrByPosition
+	 * @param i : coordonnée x de la position
+	 * @param j : coordonnée y de la position
+	 * @return -1 si la fonction n'a pas trouvé de Car à la position donnée 
+	 * k indice de la liste : si la fonction à trouvé un Car proche de cette position (proche à 30 pixels)
+	 */
 	public int getCarByPosition(int i, int j) {
 		Point p = new Point(i, j);
 		for (int k = 0; k < _cars.size(); k++) {
@@ -175,7 +218,15 @@ public class Controleur {
 		return -1;
 	}
 
+	/**
+	 * Ajoute un QRcode à la position donnée avec la valeur du QRcode donnée
+	 * @param value : valeur du QRcode
+	 * @param i : x de la position
+	 * @param j : y de la position
+	 */
 	public void addQR(int value,  int i, int j) {
+		// Partie concernant l'envoi d'un formation au serveur mosquitto (plublish)
+		//------------------------------------------------//
 		int k = this.get_qrs().size();
 		try {
 			/* envoie k, i et j : "k:value:i,j" */
@@ -183,44 +234,49 @@ public class Controleur {
 	        MqttMessage coord = new MqttMessage(tmp.getBytes());
 			client.publish(Topic.toString(Topic.TOPIC_ADD), coord);
 		} catch (MqttPersistenceException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (MqttException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		//------------------------------------------------//
+		// ajout du QRcode dans la liste 
 		get_qrs().add(new QRcode(value, new Point(i, j)));
 	}
 
 	public void removeQR(int k) {
+		// Partie concernant l'envoi d'un formation au serveur mosquitto (plublish)
+		//------------------------------------------------//
 		Point point = get_qrs().get(k).get_position();
+		int value = get_qrs().get(k).get_value();
 		try {
-			String tmp = String.valueOf(k) + ":" + String.valueOf(point.x) + "," + String.valueOf(point.y); 
+			String tmp = String.valueOf(k) + ":" + String.valueOf(value) + ":" + String.valueOf(point.x) + "," + String.valueOf(point.y); 
 	        MqttMessage coord = new MqttMessage(tmp.getBytes());
 			client.publish(Topic.toString(Topic.TOPIC_DEL), coord);
 		} catch (MqttPersistenceException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (MqttException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+		//------------------------------------------------//
+		// supression du QRcode de la liste
 		get_qrs().remove(k);
 	}
 
-	public void moveQR(int _idQRmove, int i, int j) {
-		get_qrs().get(_idQRmove).set_position(new Point(i,j));
+	public void moveQR(int k, int i, int j) {
+		// Partie concernant l'envoi d'un formation au serveur mosquitto (plublish)
+		//------------------------------------------------//
+		int value = get_qrs().get(k).get_value();
 		try {
-			String tmp = String.valueOf(_idQRmove) + ":" + String.valueOf(i) + "," + String.valueOf(j); 
+			String tmp = String.valueOf(k) + ":" + String.valueOf(value) + ":" + String.valueOf(i) + "," + String.valueOf(j); 
 	        MqttMessage coord = new MqttMessage(tmp.getBytes());
 			client.publish(Topic.toString(Topic.TOPIC_MOV), coord);
 		} catch (MqttPersistenceException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (MqttException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		//------------------------------------------------//
+		// changement de la position du QRcode
+		get_qrs().get(k).set_position(new Point(i,j));
 	}
 }

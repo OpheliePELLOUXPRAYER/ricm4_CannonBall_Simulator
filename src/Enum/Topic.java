@@ -10,6 +10,7 @@ package Enum;
 public enum Topic{
 	TOPIC_STEER,	// vitesse
 	TOPIC_THROT,	// angle
+	TOPIC_CAR,		// coord voiture
 	TOPIC_ADD, 		// ajout d'un QRcode
 	TOPIC_DEL, 		// supression d'un QRcode
 	TOPIC_MOV; 		// deplacement d'un QRcode
@@ -26,6 +27,8 @@ public enum Topic{
 				return "simulator/delqrcode";
 			case TOPIC_MOV : 
 				return "simulator/movqrcode";
+			case TOPIC_CAR : 
+				return "simulator/car";
 			default:
 				return "no topic";
 		}

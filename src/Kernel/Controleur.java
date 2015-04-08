@@ -31,7 +31,7 @@ public class Controleur {
 	/**
 	 * Liste des voitures 
 	 * pour le moment il n'y a qu'une seul voiture de gere 
-	 * mis dans le cas d'un convois il faudra pouvoir gérer plus d'une voiture
+	 * mis dans le cas d'un convois il faudra pouvoir gï¿½rer plus d'une voiture
 	 */
 	private ArrayList<Car> _cars;
 	
@@ -42,7 +42,7 @@ public class Controleur {
 	private ArrayList<QRcode> _qrs;
 	/**
 	 * le timer de l'ordonnanceur 
-	 * au cas d'un déplacement de plusieurs voitures c'est lui qui gérera leurs déplacement 
+	 * au cas d'un dï¿½placement de plusieurs voitures c'est lui qui gï¿½rera leurs dï¿½placement 
 	 * via un tourniquet par exemple
 	 */
 	private Timer t;
@@ -66,28 +66,28 @@ public class Controleur {
 	/**
 	 * Constructeur du Controleur 
 	 * @param topic : les topic auquel le clien mosquitto subscrit 
-	 * @param broker : l'adresse sur lequel le broker est lancé 
+	 * @param broker : l'adresse sur lequel le broker est lancï¿½ 
 	 * @param clientId : l'identifiant du client
 	 */
 	public Controleur(Topic[] topic, String broker, String clientId) {
 		MemoryPersistence persistence = new MemoryPersistence(); // initialisation de la persistence
-		callback = new Callback("Idle"); // creation du callback en initialisant le message courant à "Idle"
+		callback = new Callback("Idle"); // creation du callback en initialisant le message courant ï¿½ "Idle"
 
 		// creation du timer
 		t = new Timer();
 
 		// lancement de l'ordonnanceur. 
-		// il tourne toute les secondes sur lui même
+		// il tourne toute les secondes sur lui mï¿½me
 		TimerTask task = new TimerTask() {
 			@Override
 			public void run() {
 				ordonnanceur();
 			}
 		};
-		t.schedule(task, 1000);
+		t.schedule(task, 500);
 		
 		try {
-			client = new MqttClient(broker, clientId, persistence); // initialisation du client sur l'adresse du broker avec l'id clientId et avec la persistence créer plus haut 
+			client = new MqttClient(broker, clientId, persistence); // initialisation du client sur l'adresse du broker avec l'id clientId et avec la persistence crï¿½er plus haut 
 			MqttConnectOptions connOpts = new MqttConnectOptions(); // initilatilsation des options de connection
 			connOpts.setCleanSession(true);
 
@@ -99,13 +99,13 @@ public class Controleur {
 			int lenght = topic.length;
 			for (int i = 0; i < lenght; i++) {
 				Topic tmp = topic[i];
-				client.subscribe(tmp.toString(tmp), qos);// subscribe a chaque topic donne en parametre du constructeur 
+				client.subscribe(Topic.toString(tmp), qos);// subscribe a chaque topic donne en parametre du constructeur 
 			}
 
-			// Partie concernant la mise en place des données du simulateur (les listes et la vue)
+			// Partie concernant la mise en place des donnï¿½es du simulateur (les listes et la vue)
 			// ----------------------------------------------------------------//
 			_cars = new ArrayList<Car>();
-			// ajoute une voiture à la liste de voiture en lui donnant une position centré en bas de la fenetre
+			// ajoute une voiture ï¿½ la liste de voiture en lui donnant une position centrï¿½ en bas de la fenetre
 			// et avec une image par defaut
 			_cars.add(new Car("./images/car.png", new Point(230, 450)));
 			// la liste est vite au lancement du programme
@@ -155,8 +155,8 @@ public class Controleur {
 	
 	/**
 	 * ReadData
-	 * si un message a été reçu et signalé par le CallBack 
-	 * on recupere le message et s'il est diffrérent de "Idle" on modifie les donnée en conséquence
+	 * si un message a ï¿½tï¿½ reï¿½u et signalï¿½ par le CallBack 
+	 * on recupere le message et s'il est diffrï¿½rent de "Idle" on modifie les donnï¿½e en consï¿½quence
 	 */
 	public void readData() {
 		String message;
@@ -178,18 +178,35 @@ public class Controleur {
 				if (callback.isMessageArrived()) {
 					readData();
 				}
+				System.out.println("alive");
 				_cars.get(0).avancer(_cars.get(0).get_angle(),_cars.get(0).get_vitesse());
+				Point p = _cars.get(0).get_position();
+				coordVoit(p.x, p.y);
 			}
 		};
-		t.scheduleAtFixedRate(task, 0, 1000);
+		t.scheduleAtFixedRate(task, 0, 500);
 	}
 
+	public void coordVoit(int i, int j) {
+		try {
+			String tmp = String.valueOf(i) + ":" + String.valueOf(j); 
+	        MqttMessage coord = new MqttMessage(tmp.getBytes());
+	        coord.setQos(2);
+			client.publish(Topic.toString(Topic.TOPIC_CAR), coord);
+		} catch (MqttPersistenceException e) {
+			e.printStackTrace();
+		} catch (MqttException e) {
+			e.printStackTrace();
+		}
+	}
+
+	
 	/**
 	 * getQrByPosition
-	 * @param i : coordonnée x de la position
-	 * @param j : coordonnée y de la position
-	 * @return -1 si la fonction n'a pas trouvé de QRcode à la position donnée 
-	 * k indice de la liste : si la fonction à trouvé un QRcode proche de cette position (proche à 30 pixels)
+	 * @param i : coordonnï¿½e x de la position
+	 * @param j : coordonnï¿½e y de la position
+	 * @return -1 si la fonction n'a pas trouvï¿½ de QRcode ï¿½ la position donnï¿½e 
+	 * k indice de la liste : si la fonction ï¿½ trouvï¿½ un QRcode proche de cette position (proche ï¿½ 30 pixels)
 	 */
 	public int getQrByPosition(int i, int j) {
 		Point p = new Point(i, j);
@@ -203,10 +220,10 @@ public class Controleur {
 
 	/**
 	 * getQrByPosition
-	 * @param i : coordonnée x de la position
-	 * @param j : coordonnée y de la position
-	 * @return -1 si la fonction n'a pas trouvé de Car à la position donnée 
-	 * k indice de la liste : si la fonction à trouvé un Car proche de cette position (proche à 30 pixels)
+	 * @param i : coordonnï¿½e x de la position
+	 * @param j : coordonnï¿½e y de la position
+	 * @return -1 si la fonction n'a pas trouvï¿½ de Car ï¿½ la position donnï¿½e 
+	 * k indice de la liste : si la fonction ï¿½ trouvï¿½ un Car proche de cette position (proche ï¿½ 30 pixels)
 	 */
 	public int getCarByPosition(int i, int j) {
 		Point p = new Point(i, j);
@@ -219,7 +236,7 @@ public class Controleur {
 	}
 
 	/**
-	 * Ajoute un QRcode à la position donnée avec la valeur du QRcode donnée
+	 * Ajoute un QRcode ï¿½ la position donnï¿½e avec la valeur du QRcode donnï¿½e
 	 * @param value : valeur du QRcode
 	 * @param i : x de la position
 	 * @param j : y de la position
@@ -230,8 +247,9 @@ public class Controleur {
 		int k = this.get_qrs().size();
 		try {
 			/* envoie k, i et j : "k:value:i,j" */
-			String tmp = String.valueOf(k) + ":" + String.valueOf(value) + ":" + String.valueOf(i) + "," + String.valueOf(j); 
+			String tmp = String.valueOf(k) + ":" + String.valueOf(value) + ":" + String.valueOf(i) + ":" + String.valueOf(j); 
 	        MqttMessage coord = new MqttMessage(tmp.getBytes());
+	        coord.setQos(2);
 			client.publish(Topic.toString(Topic.TOPIC_ADD), coord);
 		} catch (MqttPersistenceException e) {
 			e.printStackTrace();
@@ -249,8 +267,9 @@ public class Controleur {
 		Point point = get_qrs().get(k).get_position();
 		int value = get_qrs().get(k).get_value();
 		try {
-			String tmp = String.valueOf(k) + ":" + String.valueOf(value) + ":" + String.valueOf(point.x) + "," + String.valueOf(point.y); 
+			String tmp = String.valueOf(k) + ":" + String.valueOf(value) + ":" + String.valueOf(point.x) + ":" + String.valueOf(point.y); 
 	        MqttMessage coord = new MqttMessage(tmp.getBytes());
+	        coord.setQos(2);
 			client.publish(Topic.toString(Topic.TOPIC_DEL), coord);
 		} catch (MqttPersistenceException e) {
 			e.printStackTrace();
@@ -267,8 +286,9 @@ public class Controleur {
 		//------------------------------------------------//
 		int value = get_qrs().get(k).get_value();
 		try {
-			String tmp = String.valueOf(k) + ":" + String.valueOf(value) + ":" + String.valueOf(i) + "," + String.valueOf(j); 
+			String tmp = String.valueOf(k) + ":" + String.valueOf(value) + ":" + String.valueOf(i) + ":" + String.valueOf(j); 
 	        MqttMessage coord = new MqttMessage(tmp.getBytes());
+	        coord.setQos(2);
 			client.publish(Topic.toString(Topic.TOPIC_MOV), coord);
 		} catch (MqttPersistenceException e) {
 			e.printStackTrace();

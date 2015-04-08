@@ -21,7 +21,7 @@ public class MqttPublishSample {
         String angle 		= "94";
         int time			= 5000;
         int qos             = 2;
-        String broker       = "tcp://localhost:1883";
+        String broker       = "tcp://localhost:1884";
         String clientId     = "pub";
         MemoryPersistence persistence = new MemoryPersistence();
 
